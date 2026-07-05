@@ -9,7 +9,7 @@
     "description": "High-performance Web Search filter. Triggers: '?? <query>', '??' (context-aware), or local natural-language web/current-info requests.",
     "manifest": {
       "title": "🌐 EasySearch",
-      "version": "0.4.3-local.5",
+      "version": "0.4.3-local.6",
       "author": "Hannibal",
       "repository": "https://github.com/x-hannibal/open-webui-easysearch",
       "author_email": "annibale.x@gmail.com",
@@ -19,8 +19,8 @@
     "type": "filter"
   },
   "local_patch": {
-    "version": "0.4.3-local.5",
-    "date": "2026-07-05T22:05:00+00:00",
+    "version": "0.4.3-local.6",
+    "date": "2026-07-05T22:35:00+00:00",
     "changes": [
       "Enabled global filter availability.",
       "Added conservative Spanish/natural-language web-search intent detection.",
@@ -33,7 +33,9 @@
       "Always includes the user's original request as the first search query before optional LLM query expansion.",
       "Skips LLM query expansion when the selected model is arena-model.",
       "Detects sports schedule follow-ups such as 'cuando juega Colombia?', 'a que hora juega?', and 'proximo partido'.",
-      "Adds stronger web-context and verification instructions so models do not claim lack of internet or invent current facts when search results are present."
+      "Adds stronger web-context and verification instructions so models do not claim lack of internet or invent current facts when search results are present.",
+      "Runs EasySearch internal query-generation and context-extraction LLM calls with filters bypassed, restoring request state afterwards, to prevent deadlocks in normal and group chats.",
+      "Adds an internal re-entry guard so EasySearch returns immediately if an internal EasySearch helper call ever reaches the filter chain."
     ]
   },
   "source": "Open WebUI community EasySearch v0.4.3"

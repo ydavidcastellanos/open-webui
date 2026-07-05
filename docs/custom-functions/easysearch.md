@@ -62,6 +62,12 @@ Ahora EasySearch:
 - Reconoce preguntas de calendario deportivo con `cuando`, `hora`, `fecha`, `proximo`, `juega`, `partido`, `vs` o `seleccion`.
 - Inyecta una instruccion de verificacion: si los resultados no sostienen el dato actual, el modelo debe decir que no pudo verificarlo y no inventar marcadores, alineaciones, horarios ni eliminaciones.
 
+## Deadlock en chats normales y grupales
+
+Parche local `0.4.3-local.6`: EasySearch mantenia un lock mientras llamaba internamente a `generate_chat_completion` para generar queries o extraer contexto. Como EasySearch es global, esa llamada podia reentrar al mismo filtro y quedarse esperando el lock, dejando la respuesta `done = 0` sin contenido final.
+
+Ahora las llamadas internas usan `bypass_filter=True`, restauran el estado original del request al terminar y tienen un guard de reentrada (`easysearch_internal_call`) para devolver el payload sin procesarlo si una llamada interna llegara de nuevo a la cadena de filtros.
+
 ## Ajustes recomendados para calidad
 
 Para usar EasySearch como filtro de busqueda y no como RAG nativo de Open WebUI, en desarrollo local se usan estos valores:

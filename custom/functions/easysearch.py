@@ -1,6 +1,6 @@
 """
 title: 🌐 EasySearch
-version: 0.4.3-local.5
+version: 0.4.3-local.6
 author: Hannibal
 repository: https://github.com/x-hannibal/open-webui-easysearch
 author_email: annibale.x@gmail.com
@@ -370,7 +370,7 @@ class WebSearchHandler:
             messages = [{"role": "user", "content": prompt}]
             form_data = {"model": model, "messages": messages, "stream": False}
 
-            response = await generate_chat_completion(
+            response = await _generate_chat_completion_without_filters(
                 self.request, form_data, user=await _get_user(self.user_id)
             )
 
@@ -1099,6 +1099,46 @@ async def _get_user(user_id: str):
     return result
 
 
+async def _generate_chat_completion_without_filters(request, form_data: dict, user: Any):
+    """Run internal EasySearch LLM calls without re-entering global filters."""
+    state = getattr(request, "state", None)
+    old_internal = getattr(state, "easysearch_internal_call", False) if state else False
+    had_bypass_filter = hasattr(state, "bypass_filter") if state else False
+    had_bypass_system_prompt = hasattr(state, "bypass_system_prompt") if state else False
+    old_bypass_filter = getattr(state, "bypass_filter", None) if state else None
+    old_bypass_system_prompt = (
+        getattr(state, "bypass_system_prompt", None) if state else None
+    )
+
+    if state:
+        state.easysearch_internal_call = True
+
+    try:
+        return await generate_chat_completion(
+            request,
+            form_data,
+            user=user,
+            bypass_filter=True,
+        )
+    finally:
+        if state:
+            state.easysearch_internal_call = old_internal
+            if had_bypass_filter:
+                state.bypass_filter = old_bypass_filter
+            else:
+                try:
+                    delattr(state, "bypass_filter")
+                except Exception:
+                    pass
+            if had_bypass_system_prompt:
+                state.bypass_system_prompt = old_bypass_system_prompt
+            else:
+                try:
+                    delattr(state, "bypass_system_prompt")
+                except Exception:
+                    pass
+
+
 def _strip_reasoning_blocks(text: str) -> str:
     """Remove <think>/<thinking> blocks emitted by reasoning models.
 
@@ -1506,7 +1546,7 @@ class Filter:
             messages = [{"role": "user", "content": prompt}]
             form_data = {"model": model, "messages": messages, "stream": False}
 
-            response = await generate_chat_completion(
+            response = await _generate_chat_completion_without_filters(
                 self.request, form_data, user=user
             )
 
@@ -1529,6 +1569,10 @@ class Filter:
         __request__=None,
     ) -> dict:
         """Process the incoming request and trigger search logic."""
+        request_state = getattr(__request__, "state", None)
+        if getattr(request_state, "easysearch_internal_call", False):
+            return body
+
         async with self._state_lock:
                 self.ctx = None
                 self.request = __request__
