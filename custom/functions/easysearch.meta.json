@@ -1,0 +1,31 @@
+{
+  "id": "easysearch",
+  "name": "🌐EasySearch",
+  "type": "filter",
+  "is_active": true,
+  "is_global": true,
+  "valves": null,
+  "meta": {
+    "description": "High-performance Web Search filter. Triggers: '?? <query>', '??' (context-aware), or local natural-language web/current-info requests.",
+    "manifest": {
+      "title": "🌐 EasySearch",
+      "version": "0.4.3",
+      "author": "Hannibal",
+      "repository": "https://github.com/x-hannibal/open-webui-easysearch",
+      "author_email": "annibale.x@gmail.com",
+      "author_url": "https://openwebui.com/u/h4nn1b4l",
+      "description": "High-performance Web Search filter. Triggers: '?? <query>', '??' (context-aware), or local natural-language web/current-info requests."
+    },
+    "type": "filter"
+  },
+  "local_patch": {
+    "version": "0.4.3-local.1",
+    "date": "2026-07-05T21:04:41+00:00",
+    "changes": [
+      "Enabled global filter availability.",
+      "Added conservative Spanish/natural-language web-search intent detection.",
+      "Kept upstream ?? trigger behavior for explicit and context-aware searches."
+    ]
+  },
+  "source": "Open WebUI community EasySearch v0.4.3"
+}
