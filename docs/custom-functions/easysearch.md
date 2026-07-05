@@ -68,6 +68,12 @@ Parche local `0.4.3-local.6`: EasySearch mantenia un lock mientras llamaba inter
 
 Ahora las llamadas internas usan `bypass_filter=True`, restauran el estado original del request al terminar y tienen un guard de reentrada (`easysearch_internal_call`) para devolver el payload sin procesarlo si una llamada interna llegara de nuevo a la cadena de filtros.
 
+## Wrapper models y Conversation Pipe
+
+Parche local `0.4.3-local.7`: en chats grupales, el `model` del request puede ser `multi_model_conversations_v2.Conversation-pipe`. EasySearch intentaba usar ese mismo modelo wrapper para generar queries auxiliares, lo que reentraba al pipe antes de configurar participantes y dejaba el chat esperando sin persistir assistant.
+
+Ahora EasySearch detecta modelos wrapper/control (`Conversation Pipe`, `arena-model` y similares) y no los usa para llamadas internas de generacion de queries ni extraccion contextual. En esos casos usa directamente la consulta original del usuario; la busqueda web se completa, muestra fuentes y luego entrega el control al pipe para configurar participantes o responder.
+
 ## Ajustes recomendados para calidad
 
 Para usar EasySearch como filtro de busqueda y no como RAG nativo de Open WebUI, en desarrollo local se usan estos valores:

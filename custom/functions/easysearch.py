@@ -1,6 +1,6 @@
 """
 title: 🌐 EasySearch
-version: 0.4.3-local.6
+version: 0.4.3-local.7
 author: Hannibal
 repository: https://github.com/x-hannibal/open-webui-easysearch
 author_email: annibale.x@gmail.com
@@ -339,7 +339,7 @@ class WebSearchHandler:
         if not base_query:
             return []
 
-        if model == "arena-model":
+        if _is_control_or_pipe_model(model):
             return [base_query][:count]
 
         def merge_queries(extra_queries: List[Any]) -> List[str]:
@@ -1099,6 +1099,20 @@ async def _get_user(user_id: str):
     return result
 
 
+def _is_control_or_pipe_model(model: Any) -> bool:
+    """Return True for Open WebUI wrapper models that should not be used for EasySearch helper LLM calls."""
+    model_id = str(model or "").strip().lower()
+    if not model_id:
+        return True
+    return (
+        model_id == "arena-model"
+        or model_id.startswith("arena")
+        or model_id.startswith("multi_model_conversations_v2.")
+        or "conversation-pipe" in model_id
+        or "conversation pipe" in model_id
+    )
+
+
 async def _generate_chat_completion_without_filters(request, form_data: dict, user: Any):
     """Run internal EasySearch LLM calls without re-entering global filters."""
     state = getattr(request, "state", None)
@@ -1539,6 +1553,9 @@ class Filter:
         """
         Generates a search query based on the provided context (last message).
         """
+        if _is_control_or_pipe_model(model):
+            return context_text[:100]
+
         try:
             user = await _get_user(user_id)
             prompt = CONTEXT_EXTRACTION_TEMPLATE.format(TEXT=context_text[:2000])
