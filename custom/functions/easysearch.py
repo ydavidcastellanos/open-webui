@@ -1,6 +1,6 @@
 """
 title: 🌐 EasySearch
-version: 0.4.3
+version: 0.4.3-local.5
 author: Hannibal
 repository: https://github.com/x-hannibal/open-webui-easysearch
 author_email: annibale.x@gmail.com
@@ -335,6 +335,24 @@ class WebSearchHandler:
     ) -> List[str]:
         """Uses LLM to expand the user request into multiple search queries."""
 
+        base_query = text.strip()
+        if not base_query:
+            return []
+
+        if model == "arena-model":
+            return [base_query][:count]
+
+        def merge_queries(extra_queries: List[Any]) -> List[str]:
+            merged = []
+            seen = set()
+            for query in [base_query, *extra_queries]:
+                q = str(query).strip()
+                key = q.lower()
+                if q and key not in seen:
+                    seen.add(key)
+                    merged.append(q)
+            return merged[:count]
+
         try:
             lang_rule = (
                 f"- Search results and queries MUST be in the following language/locale: {lang}."
@@ -364,19 +382,19 @@ class WebSearchHandler:
                     data = json.loads(content)
                     queries = data.get("queries", [])
                     if isinstance(queries, list):
-                        return queries[:count]
+                        return merge_queries(queries)
                 except json.JSONDecodeError:
                     self.log("JSON Decode Error in Query Gen", True)
-                    return [
+                    return merge_queries([
                         line.strip('- *"')
                         for line in content.split("\n")
                         if line.strip()
-                    ][:count]
-            return [text]
+                    ])
+            return [base_query]
 
         except Exception as e:
             self.log(f"Query Gen Error: {e}", True)
-            return [text]
+            return [base_query]
 
     async def _execute_search(self, queries: List[str], target_count: int) -> Any:
         """
@@ -1327,6 +1345,13 @@ class Filter:
         if any(term in lowered for term in explicit_web_terms):
             return True
 
+        sports_schedule_patterns = [
+            r"\b(cuando|a que hora|hora|fecha|proximo|siguiente)\b.*\b(juega|juegan|jugara|jugaran|partido|enfrenta|enfrentan|vs|seleccion)\b",
+            r"\b(juega|juegan|jugara|jugaran|partido|enfrenta|enfrentan|vs)\b.*\b(cuando|a que hora|hora|fecha|proximo|siguiente)\b",
+        ]
+        if any(re.search(pattern, lowered) for pattern in sports_schedule_patterns):
+            return True
+
         action_terms = [
             "busca",
             "buscar",
@@ -1369,6 +1394,11 @@ class Filter:
             "actualidad",
             "ultimo",
             "ultima",
+            "proximo",
+            "siguiente",
+            "cuando",
+            "fecha",
+            "horario",
         ]
         fresh_subject_terms = [
             "alineacion",
@@ -1378,6 +1408,10 @@ class Filter:
             "convocados",
             "lesionados",
             "jugadores",
+            "juega",
+            "juegan",
+            "jugara",
+            "jugaran",
             "partido",
             "marcador",
             "resultado",
@@ -1677,6 +1711,9 @@ class Filter:
                             f"Write a thorough, detailed and well-structured answer that connects findings from multiple sources into a coherent picture.\n"
                             # f"Provide a comprehensive, well-structured response that synthesises the key findings.\n"
                             f"CRITICAL: {lang_instruction}\n"
+                            f"WEB CONTEXT: You DO have web search results in this message. Do not say you lack internet, browsing, or web-search access when the <search_results> block is present.\n"
+                            f"VERIFICATION: For current or live facts such as matches, scores, schedules, lineups, news, prices, weather, or leaders, answer only with facts supported by the search results. "
+                            f"If the results do not verify the answer, say that you could not verify it from the provided search results. Do not infer eliminations, schedules, scores, or lineups from missing information.\n"
                             f"RELIABILITY: If 'Full Content' is missing, irrelevant, or contains only menus, "
                             f"you MUST prioritize the 'Summary (Snippet)' as it contains the highly-relevant search anchor.\n\n"
                             f"<search_results>\n{search_context}\n</search_results>\n\n"
@@ -1692,8 +1729,15 @@ class Filter:
                             msg for msg in msg_list if msg.get("role") == "system"
                         ]
 
+                        search_system_message = (
+                            "You are answering with externally fetched web search results. "
+                            "Use the provided <search_results> as browsing context, cite supported facts with inline [N] markers, "
+                            "and do not invent current information that is not verified by those results."
+                        )
+
                         # Reconstruct history
                         body["messages"] = preserved_messages + [
+                            {"role": "system", "content": search_system_message},
                             {"role": "user", "content": instr}
                         ]
 

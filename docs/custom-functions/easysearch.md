@@ -7,6 +7,7 @@ EasySearch es una Function de tipo `filter` tomada de la comunidad Open WebUI. S
 - `?? consulta`: busqueda explicita.
 - `??`: busqueda basada en el contexto reciente del chat.
 - Parche local: solicitudes naturales y conservadoras como `busca por internet`, `ver por internet`, `consulta noticias recientes`, `ultimo resultado`, `marcador`, `precio actual` o `clima`.
+- Parche local `0.4.3-local.5`: seguimientos deportivos como `cuando juega Colombia?`, `a que hora juega?` o `proximo partido` tambien disparan busqueda aunque no digan `internet` ni `hoy`.
 
 ## Configuracion local
 
@@ -24,6 +25,8 @@ EasySearch usa el flujo nativo de busqueda web de Open WebUI. Si el backend de W
 ?? ultimo partido de la seleccion Colombia
 puedes buscar por internet como acabo el ultimo partido de la seleccion Colombia?
 consulta noticias recientes sobre Open WebUI
+cuando juega Colombia?
+a que hora juega Brasil?
 ```
 
 ## Compatibilidad state.config
@@ -47,6 +50,17 @@ Si aparece `Search Error` aun cuando EasySearch se dispara, revisar primero `Adm
 Parche local `0.4.3-local.3`: Open WebUI puede ejecutar la misma instancia del filtro en paralelo cuando se comparan varios modelos. EasySearch mantiene estado temporal en `self`, por lo que ahora serializa `inlet`/`outlet` para evitar que una busqueda pise el contexto de otra.
 
 El detector automatico tambien reconoce preguntas actuales sin verbo explicito, por ejemplo `quienes son los titulares de Brasil hoy?` o `como va el partido ahora?`.
+
+## Seguimientos y alucinaciones
+
+Parche local `0.4.3-local.5`: en chats de comparacion multi-modelo, una pregunta inicial podia traer fuentes web, pero un seguimiento como `y cuando juega Colombia?` no disparaba EasySearch. Los modelos entonces respondian desde contexto parcial y algunos inferian eliminaciones o calendarios no verificados.
+
+Ahora EasySearch:
+
+- Usa siempre la pregunta original como primera query, antes de cualquier expansion generada por LLM.
+- Evita usar `arena-model` para generar queries auxiliares.
+- Reconoce preguntas de calendario deportivo con `cuando`, `hora`, `fecha`, `proximo`, `juega`, `partido`, `vs` o `seleccion`.
+- Inyecta una instruccion de verificacion: si los resultados no sostienen el dato actual, el modelo debe decir que no pudo verificarlo y no inventar marcadores, alineaciones, horarios ni eliminaciones.
 
 ## Ajustes recomendados para calidad
 

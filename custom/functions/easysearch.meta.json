@@ -9,7 +9,7 @@
     "description": "High-performance Web Search filter. Triggers: '?? <query>', '??' (context-aware), or local natural-language web/current-info requests.",
     "manifest": {
       "title": "🌐 EasySearch",
-      "version": "0.4.3",
+      "version": "0.4.3-local.5",
       "author": "Hannibal",
       "repository": "https://github.com/x-hannibal/open-webui-easysearch",
       "author_email": "annibale.x@gmail.com",
@@ -19,8 +19,8 @@
     "type": "filter"
   },
   "local_patch": {
-    "version": "0.4.3-local.4",
-    "date": "2026-07-05T21:39:56+00:00",
+    "version": "0.4.3-local.5",
+    "date": "2026-07-05T22:05:00+00:00",
     "changes": [
       "Enabled global filter availability.",
       "Added conservative Spanish/natural-language web-search intent detection.",
@@ -29,7 +29,11 @@
       "Serialized EasySearch inlet/outlet execution to avoid shared-state races in multi-model comparison chats.",
       "Expanded natural-language trigger detection for current sports/news/status questions such as lineups or live match status.",
       "Recommended native Web Search bypass settings for EasySearch: bypass loader and embedding/retrieval, with DuckDuckGo result_count=8.",
-      "Patched Arena streaming error propagation so JSONResponse provider errors do not surface as missing body_iterator."
+      "Patched Arena streaming error propagation so JSONResponse provider errors do not surface as missing body_iterator.",
+      "Always includes the user's original request as the first search query before optional LLM query expansion.",
+      "Skips LLM query expansion when the selected model is arena-model.",
+      "Detects sports schedule follow-ups such as 'cuando juega Colombia?', 'a que hora juega?', and 'proximo partido'.",
+      "Adds stronger web-context and verification instructions so models do not claim lack of internet or invent current facts when search results are present."
     ]
   },
   "source": "Open WebUI community EasySearch v0.4.3"
