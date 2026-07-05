@@ -41,3 +41,9 @@ web.search.ddgs_backend = auto
 ```
 
 Si aparece `Search Error` aun cuando EasySearch se dispara, revisar primero `Admin Settings > Web Search`: el motor debe estar habilitado y seleccionado. DuckDuckGo/DDGS sirve para pruebas porque no requiere API key.
+
+## Uso en comparacion multi-modelo
+
+Parche local `0.4.3-local.3`: Open WebUI puede ejecutar la misma instancia del filtro en paralelo cuando se comparan varios modelos. EasySearch mantiene estado temporal en `self`, por lo que ahora serializa `inlet`/`outlet` para evitar que una busqueda pise el contexto de otra.
+
+El detector automatico tambien reconoce preguntas actuales sin verbo explicito, por ejemplo `quienes son los titulares de Brasil hoy?` o `como va el partido ahora?`.

@@ -19,13 +19,15 @@
     "type": "filter"
   },
   "local_patch": {
-    "version": "0.4.3-local.2",
-    "date": "2026-07-05T21:12:23+00:00",
+    "version": "0.4.3-local.3",
+    "date": "2026-07-05T21:32:54+00:00",
     "changes": [
       "Enabled global filter availability.",
       "Added conservative Spanish/natural-language web-search intent detection.",
       "Kept upstream ?? trigger behavior for explicit and context-aware searches.",
-      "Made ShadowRequest compatible with Open WebUI versions where request.app.state.config is not present."
+      "Made ShadowRequest compatible with Open WebUI versions where request.app.state.config is not present.",
+      "Serialized EasySearch inlet/outlet execution to avoid shared-state races in multi-model comparison chats.",
+      "Expanded natural-language trigger detection for current sports/news/status questions such as lineups or live match status."
     ]
   },
   "source": "Open WebUI community EasySearch v0.4.3"
