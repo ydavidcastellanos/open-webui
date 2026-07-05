@@ -235,7 +235,14 @@ class ShadowRequest:
 
         real_app = original_request.app
         real_state = real_app.state
-        real_config = real_state.config
+
+        # Open WebUI versions based on the per-key config store do not expose
+        # request.app.state.config. The native process_web_search path reads
+        # get_retrieval_config() directly, so an empty proxy config is enough
+        # to keep older EasySearch override code from crashing.
+        real_config = getattr(real_state, "config", None)
+        if real_config is None:
+            real_config = type("EmptyConfig", (), {})()
 
         self.app = AppProxy(
             real_app, StateProxy(real_state, ConfigProxy(real_config, overrides))

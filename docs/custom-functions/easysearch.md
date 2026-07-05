@@ -25,3 +25,19 @@ EasySearch usa el flujo nativo de busqueda web de Open WebUI. Si el backend de W
 puedes buscar por internet como acabo el ultimo partido de la seleccion Colombia?
 consulta noticias recientes sobre Open WebUI
 ```
+
+## Compatibilidad state.config
+
+Parche local `0.4.3-local.2`: algunas versiones recientes de Open WebUI no exponen `request.app.state.config`. EasySearch ahora tolera esa ausencia y delega la configuracion real de busqueda al flujo nativo `process_web_search` / `get_retrieval_config()`.
+
+## Configuracion nativa Web Search
+
+EasySearch solo prepara el mensaje y delega la busqueda al backend nativo de Open WebUI. En desarrollo local quedo configurado:
+
+```text
+web.search.enable = true
+web.search.engine = duckduckgo
+web.search.ddgs_backend = auto
+```
+
+Si aparece `Search Error` aun cuando EasySearch se dispara, revisar primero `Admin Settings > Web Search`: el motor debe estar habilitado y seleccionado. DuckDuckGo/DDGS sirve para pruebas porque no requiere API key.
