@@ -148,11 +148,19 @@
 	let selectedModels = [''];
 	let atSelectedModel: Model | undefined;
 	let selectedModelIds = [];
-	$: if (atSelectedModel !== undefined) {
-		selectedModelIds = [atSelectedModel.id];
-	} else {
-		selectedModelIds = selectedModels;
-	}
+	const GROUP_CONVERSATION_PIPE_ID = 'multi_model_conversations_v2.Conversation-pipe';
+	const hasGroupConversationPipeSelected = (models = selectedModels) =>
+		models?.includes(GROUP_CONVERSATION_PIPE_ID);
+	const getSelectedModelIdsForRequest = (
+		models = selectedModels,
+		atModel: Model | undefined = atSelectedModel
+	) => {
+		if (atModel !== undefined) {
+			return hasGroupConversationPipeSelected(models) ? models : [atModel.id];
+		}
+		return models;
+	};
+	$: selectedModelIds = getSelectedModelIdsForRequest(selectedModels, atSelectedModel);
 
 	let selectedToolIds = [];
 	let selectedSkillIds = [];
@@ -168,7 +176,7 @@
 	let webSearchConfirmed = false;
 
 	$: {
-		const currentModels = atSelectedModel?.id ? [atSelectedModel.id] : selectedModels;
+		const currentModels = getSelectedModelIdsForRequest(selectedModels, atSelectedModel);
 		const allModelsSupportWebSearch =
 			currentModels.filter(
 				(model) => $models.find((m) => m.id === model)?.info?.meta?.capabilities?.web_search ?? true
@@ -2249,9 +2257,7 @@
 		// If modelId is provided, use it, else use selected model
 		let selectedModelIds = modelId
 			? [modelId]
-			: atSelectedModel !== undefined
-				? [atSelectedModel.id]
-				: selectedModels;
+			: getSelectedModelIdsForRequest(selectedModels, atSelectedModel);
 
 		// Create response messages for each selected model
 		// Build message_ids list: [{model_id, message_id}, ...]
@@ -2579,6 +2585,9 @@
 					)
 				},
 				model_item: $models.find((m) => m.id === model.id),
+				...(atSelectedModel?.id && hasGroupConversationPipeSelected()
+					? { selected_model: atSelectedModel.id }
+					: {}),
 
 				session_id: $socket?.id,
 				chat_id: _chatId || undefined,

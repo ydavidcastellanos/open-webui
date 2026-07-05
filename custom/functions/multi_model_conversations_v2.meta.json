@@ -1,0 +1,34 @@
+{
+  "id": "multi_model_conversations_v2",
+  "name": "Multi Model Conversations v2",
+  "type": "pipe",
+  "is_active": true,
+  "is_global": false,
+  "valves": null,
+  "meta": {
+    "description": "Conversacion multi-modelo con participantes, alias, turnos y manager de grupo. Parches locales: persistencia por chat, popup sin modelos preseleccionados, foco en moderador, fallback no-streaming, prioridad de @chips, limpieza de historial y reinicio de fases por solicitud.",
+    "manifest": {
+      "title": "Multi Model Conversations v2",
+      "author": "Haervwe",
+      "author_url": "https://github.com/Haervwe",
+      "funding_url": "https://github.com/Haervwe/open-webui-tools",
+      "version": "2.9.1",
+      "required_open_webui_version": "0.9.1",
+      "local_patch": "Changed _check_model_native_fc to async and awaited the call.",
+      "local_patch_models_dropdown": "Passes available models from backend app.state.MODELS into the configuration popup and keeps browser fetch as optional refresh.",
+      "local_patch_state_config": "Avoids AttributeError when Open WebUI app.state has no config attribute.",
+      "local_patch_chat_meta_persistence": "Persists multi_model_config in chat.meta and reloads it on later messages.",
+      "local_patch_moderator_focus": "Prompts participants to prioritize David/moderator and avoid side conversations unless requested.",
+      "local_patch_defaults": "Popup starts with empty participant model fields, 2 participant slots, and one round; existing chats reload their persisted participants.",
+      "local_patch_streaming_fallback": "Suppresses unsupported-streaming errors and lets non-stream fallback answer.",
+      "local_patch_default_before_popup": "Uses valid UserValves/default participants before opening configuration popup.",
+      "local_patch_selected_model_priority": "selected_model from Open WebUI @ chips always routes to a one-model turn.",
+      "local_patch_clean_model_history": "Removes UI details/summary/tool-warning markup before feeding history to participant models.",
+      "local_patch_one_more_round": "Interprets 'una ronda mas' as one group cycle, not two cycles.",
+      "local_patch_brainstorm_debate_rounds": "Parses 'N rondas de lluvia de ideas con debate' as N debate rounds before vote/conclusion.",
+      "local_patch_vote_scope_current_request": "Counts conclusion votes only from the current request, avoiding stale winners from prior problems."
+    }
+  },
+  "source": "custom/functions/multi_model_conversations_v2.py",
+  "exported_from": "backend/data/webui.db"
+}
