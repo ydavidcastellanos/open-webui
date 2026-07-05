@@ -47,3 +47,18 @@ Si aparece `Search Error` aun cuando EasySearch se dispara, revisar primero `Adm
 Parche local `0.4.3-local.3`: Open WebUI puede ejecutar la misma instancia del filtro en paralelo cuando se comparan varios modelos. EasySearch mantiene estado temporal en `self`, por lo que ahora serializa `inlet`/`outlet` para evitar que una busqueda pise el contexto de otra.
 
 El detector automatico tambien reconoce preguntas actuales sin verbo explicito, por ejemplo `quienes son los titulares de Brasil hoy?` o `como va el partido ahora?`.
+
+## Ajustes recomendados para calidad
+
+Para usar EasySearch como filtro de busqueda y no como RAG nativo de Open WebUI, en desarrollo local se usan estos valores:
+
+```text
+web.search.enable = true
+web.search.engine = duckduckgo
+web.search.ddgs_backend = auto
+web.search.result_count = 8
+web.search.bypass_web_loader = true
+web.search.bypass_embedding_and_retrieval = true
+```
+
+Esto deja que Open WebUI solo entregue candidatos de busqueda y que EasySearch haga su propio fetch/limpieza/citas. Tambien evita dependencias innecesarias de loader, embeddings y vector DB en chats de comparacion multi-modelo.

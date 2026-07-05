@@ -258,22 +258,30 @@ async def generate_chat_completion(
                     bypass_filter=True,
                     bypass_system_prompt=bypass_system_prompt,
                 )
+                if isinstance(response, JSONResponse):
+                    return response
+                if not hasattr(response, 'body_iterator'):
+                    return JSONResponse(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        content={'detail': 'Arena selected model did not return a streaming response'},
+                    )
                 return StreamingResponse(
                     stream_wrapper(response.body_iterator),
                     media_type='text/event-stream',
                     background=response.background,
                 )
             else:
+                response = await generate_chat_completion(
+                    request,
+                    form_data,
+                    user,
+                    bypass_filter=True,
+                    bypass_system_prompt=bypass_system_prompt,
+                )
+                if isinstance(response, JSONResponse):
+                    return response
                 return {
-                    **(
-                        await generate_chat_completion(
-                            request,
-                            form_data,
-                            user,
-                            bypass_filter=True,
-                            bypass_system_prompt=bypass_system_prompt,
-                        )
-                    ),
+                    **response,
                     'selected_model_id': selected_model_id,
                 }
 
